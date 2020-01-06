@@ -1,5 +1,5 @@
 import { HomeAssistant } from './index';
-import { HADomain, HAMessageType, HAServiceActionType, IHACallServiceMessage, IHAResultMessage } from './declarations';
+import { HADomain, HAMessageType, HAServiceType, IHACallServiceMessage, IHAResultMessage } from './declarations';
 import { Observable } from 'rxjs';
 import { toggleServiceActionType } from './util';
 
@@ -12,7 +12,7 @@ export class HomeAssistantService {
   /**
    * Call service
    */
-  call(domain: HADomain, service: HAServiceActionType, serviceDataOrEntity?: any): Observable<IHAResultMessage> {
+  call(domain: HADomain, service: HAServiceType, serviceDataOrEntity?: any): Observable<IHAResultMessage> {
 
     const pack: IHACallServiceMessage = {
       type: HAMessageType.CallService,
@@ -22,14 +22,16 @@ export class HomeAssistantService {
 
     if (serviceDataOrEntity) {
 
-      if (typeof serviceDataOrEntity === 'string') {
-
-        if (!serviceDataOrEntity.startsWith(`${domain}.`)) {
-          serviceDataOrEntity = `${domain}.${serviceDataOrEntity}`;
-        }
+      if (Array.isArray(serviceDataOrEntity)) {
 
         serviceDataOrEntity = {
-          entity_id: serviceDataOrEntity
+          entity_id: serviceDataOrEntity.map(entity => this.mapEntityDomain(domain, entity))
+        };
+
+      } else if (typeof serviceDataOrEntity === 'string') {
+
+        serviceDataOrEntity = {
+          entity_id: this.mapEntityDomain(domain, serviceDataOrEntity)
         }
 
       }
@@ -52,6 +54,14 @@ export class HomeAssistantService {
         entity_id: entities
       }
     );
+  }
+
+  private mapEntityDomain(domain: HADomain, entity: string): string {
+    if (!entity.startsWith(`${domain}.`)) {
+      return `${domain}.${entity}`;
+    }
+
+    return entity;
   }
 
 }

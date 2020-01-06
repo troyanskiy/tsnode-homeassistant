@@ -20,21 +20,21 @@ export class HomeAssistantStates {
 
     this.hass
       .events
-      .select$('state_changed')
+      .select('state_changed')
       .subscribe(data => this.handleHAStateChange(data));
 
     this.hass.connectionStatus$
       .pipe(
         filter(status => status === HAConnectionStatus.Connected)
       )
-      .subscribe(() => this.fetchStates$());
+      .subscribe(() => this.fetchStates());
 
   }
 
   /**
    * Fetch and set states
    */
-  fetchStates$(): Observable<IHAResultMessage<IHAEntityState[]>> {
+  fetchStates(): Observable<IHAResultMessage<IHAEntityState[]>> {
 
     console.log('Fetching states');
 

@@ -100,7 +100,7 @@ export enum HADomain {
   Sensor = 'sensor'
 }
 
-export enum HAServiceActionType {
+export enum HAServiceType {
   TurnOn = 'turn_on',
   TurnOff = 'turn_off',
   Toggle = 'toggle'
@@ -109,7 +109,7 @@ export enum HAServiceActionType {
 export interface IHACallServiceMessage extends IHAMessageWithId {
   type: HAMessageType.CallService;
   domain: HADomain;
-  service: HAServiceActionType;
+  service: HAServiceType;
   service_data?: any;
 }
 

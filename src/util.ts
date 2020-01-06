@@ -1,16 +1,16 @@
-import { HAServiceActionType } from './declarations';
+import { HAServiceType } from './declarations';
 
 export const toggleServiceActionType = (force?: boolean)
-  : HAServiceActionType.Toggle | HAServiceActionType.TurnOn | HAServiceActionType.TurnOff => {
+  : HAServiceType.Toggle | HAServiceType.TurnOn | HAServiceType.TurnOff => {
 
   if (force === true) {
-    return HAServiceActionType.TurnOn;
+    return HAServiceType.TurnOn;
   }
 
   if (force === false) {
-    return HAServiceActionType.TurnOff;
+    return HAServiceType.TurnOff;
   }
 
-  return HAServiceActionType.Toggle;
+  return HAServiceType.Toggle;
 
 }

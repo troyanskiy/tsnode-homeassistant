@@ -36,7 +36,7 @@ export class HomeAssistantEvents {
     // todo
   }
 
-  select$<T = any>(eventType: string): Observable<IHAEvent<T>> {
+  select<T = any>(eventType: string): Observable<IHAEvent<T>> {
     if (!this.subMapName[eventType]) {
 
       const entry: IEventSubscriptionEntry = {
