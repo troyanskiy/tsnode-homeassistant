@@ -3,6 +3,10 @@
 It's simple reactive way of access and control HomeAssistant using the
 websocket api.
 
+This is very first versions of the library and some functionality is missing...
+
+Please, do not hasitate to create an issues if you will find any bug or missing functionality.
+
 ## Installation
 
 ```bash
@@ -41,11 +45,46 @@ ha
 
 # API
 
-## Events
+## 1 HomeAssistant
+
+### 1.1 Connection status observable
+
+`connectionStatus$: Observable<HAConnectionStatus>`
+
+### 1.2 Connection status
+
+`connectionStatus: HAConnectionStatus`
+
+### 1.3 HomeAssistant Version
+
+`haVersion: string`
+
+### 1.4 Events instance
+
+`events: HomeAssistantEvents`
+
+Details below
+
+### 1.5 Service instance
+
+`events: HomeAssistantService`
+
+Details below
+
+### 1.6 States instance
+
+`events: HomeAssistantStates`
+
+Details below
+
+
+
+
+## 2 Events
 
 Available as object on HomeAssistant instance `<instance>.events`
 
-### Subscribe to event
+### 2.1 Subscribe to event
 
 ```typescript
 *.events.select(eventType: string): Observable<IHAEvent<T>>
@@ -71,11 +110,11 @@ export interface IHAEventContext {
 
 Above
 
-## Service
+## 3 Service
 
 Available as object on HomeAssistant instance `<instance>.service`
 
-### Call a service
+### 3.1 Call a service
 
 ```typescript
 *.service.call(domain: HADomain, service: HAServiceActionType, serviceDataOrEntity?: any): Observable<IHAResultMessage>
@@ -127,7 +166,7 @@ ha
   )
 ```
 
-### Toggle / Shortcut to call a service
+### 3.2 Toggle / Shortcut to call a service
 
 ```typescript
 toggle(domain: HADomain, entities: string[] | string, force?: boolean): Observable<IHAResultMessage>
@@ -150,3 +189,49 @@ ha
     ['EntityId1', 'EntityId2']
   )
 ```
+
+## 4 States
+
+Available as object on HomeAssistant instance `<instance>.states`
+
+All the states are loaded and saved in the memory every time when Node.js instance is connected to the HomeAssistant server
+
+### 4.1 On Change
+
+```typescript
+*.states.onChange: Subject<IHAEventStateChangeData>
+```
+
+#### Examples
+
+```typescript
+ha
+  .states
+  .onChange
+  .pipe(
+    filter(state => state.entity_id === 'MyEntityId'),
+    map(state => state.new_state)
+  )
+  .subscribe(newState => {
+    // do something with new state
+    console.log('Received new state', newState);
+  })
+```
+
+### 4.2 Fetch states from HomeAssistant and update in the memory
+
+Will call HA to get all the states, updates them in the memory and returns as observable resolution
+
+```typescript
+*.states.fetchStates(): Observable<IHAResultMessage<IHAEntityState[]>>
+```
+
+### 4.3 Get state from memory
+
+Will return state from memory or null if not found
+
+```typescript
+*.states.getState(entityId: string): IHAEntityState | null
+```
+
+
