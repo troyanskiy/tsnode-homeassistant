@@ -13,6 +13,10 @@ Please, do not hasitate to create an issues if you will find any bug or missing 
 $ npm i --save tsnode-homeassistant
 ```
 
+Or use seed project
+
+[https://github.com/troyanskiy/tsnode-homeassistant-seed](https://github.com/troyanskiy/tsnode-homeassistant-seed)
+
 ## Usage example
 
 ```typescript
