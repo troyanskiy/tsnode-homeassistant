@@ -1,6 +1,6 @@
 {
   "name": "tsnode-homeassistant",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Control your HomeAssistant devices in reactive way using node.js and typescript",
   "main": "dist/index.js",
   "type": "commonjs",
