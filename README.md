@@ -81,6 +81,8 @@ Available as object on HomeAssistant instance `<instance>.service`
 *.service.call(domain: HADomain, service: HAServiceActionType, serviceDataOrEntity?: any): Observable<IHAResultMessage>
 ```
 
+Will return an observable with service execution result
+
 #### Examples
 
 ```typescript
@@ -122,5 +124,29 @@ ha
     {
       entity_id: ['EntityId1', 'EntityId2']
     }
+  )
+```
+
+### Toggle / Shortcut to call a service
+
+```typescript
+toggle(domain: HADomain, entities: string[] | string, force?: boolean): Observable<IHAResultMessage>
+```
+Will return an observable with service execution result
+
+If 
+* `force === true` it will call `TurnOn` service
+* `force === false` it will call `TurnOff` service
+* `force` is missing will call `Toggle` service
+
+
+#### Example
+
+```typescript
+ha
+  .service
+  .toggle(
+    HADomain.Switch,
+    ['EntityId1', 'EntityId2']
   )
 ```
