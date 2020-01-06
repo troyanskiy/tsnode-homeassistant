@@ -88,8 +88,8 @@ ha
   .service
   .call(
     HADomain.Light,
-    'light.EntityId1',
-    HAServiceType.TurnOn
+    HAServiceType.TurnOn,
+    'light.EntityId1'
   )
 ```
 
@@ -98,8 +98,8 @@ ha
   .service
   .call(
     HADomain.Light,
-    'EntityId1',
-    HAServiceType.TurnOn
+    HAServiceType.TurnOn,
+    'EntityId1'
   )
 ```
 
@@ -108,8 +108,8 @@ ha
   .service
   .call(
     HADomain.Switch,
-    ['EntityId1', 'switch.EntityId2'],
-    HAServiceType.TurnOff
+    HAServiceType.TurnOff,
+    ['EntityId1', 'switch.EntityId2']
   )
 ```
 
@@ -118,9 +118,9 @@ ha
   .service
   .call(
     HADomain.Switch,
+    HAServiceType.Toggle,
     {
       entity_id: ['EntityId1', 'EntityId2']
-    },
-    HAServiceType.Toggle
+    }
   )
 ```
