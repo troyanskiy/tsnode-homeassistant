@@ -13,13 +13,11 @@ $ npm i --save tsnode-homeassistant
 
 ```typescript
 import { HomeAssistant, IHAEvent } from 'tsnode-homeassistant';
-import { IButtonEventData } from './data'; import { LivingRoom } from
-'./room/living.room'; import { CONFIG } from './config'; import { map }
-from 'rxjs/operators';
+import { IButtonEventData } from './data';
+import { CONFIG } from './config';
+import { map } from 'rxjs/operators';
 
 const ha = new HomeAssistant(CONFIG);
-
-const livingRoom = new LivingRoom(ha);
 
 ha
   .events
@@ -29,9 +27,13 @@ ha
   )
   .subscribe(data => {
 
-    livingRoom.handleButtonEvent(data);
+    console.log('The event', data);
 
   });
 
-ha.states.onChange.subscribe(state => console.log(state));
+ha
+  .states
+  .onChange
+  .subscribe(state => console.log(state));
+
 ```
