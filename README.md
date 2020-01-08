@@ -59,25 +59,29 @@ ha
 
 `connectionStatus: HAConnectionStatus`
 
-### 1.3 HomeAssistant Version
+### 1.3 Ready state observable
+
+`ready$: Observable<void>`
+
+### 1.4 HomeAssistant Version
 
 `haVersion: string`
 
-### 1.4 Events instance
+### 1.5 Events instance
 
 `events: HomeAssistantEvents`
 
 Details below
 
-### 1.5 Service instance
+### 1.6 Service instance
 
-`events: HomeAssistantService`
+`service: HomeAssistantService`
 
 Details below
 
-### 1.6 States instance
+### 1.7 States instance
 
-`events: HomeAssistantStates`
+`entities: HomeAssistantEntities`
 
 Details below
 
@@ -194,48 +198,48 @@ ha
   )
 ```
 
-## 4 States
+## 4 Entities / States
 
-Available as object on HomeAssistant instance `<instance>.states`
+Available as object on HomeAssistant instance `<instance>.entities`
 
-All the states are loaded and saved in the memory every time when Node.js instance is connected to the HomeAssistant server
+All the entities/states are loaded and saved in the memory every time
+when Node.js instance is connected to the HomeAssistant server
 
 ### 4.1 On Change
 
 ```typescript
-*.states.onChange: Subject<IHAEventStateChangeData>
+*.entities.onChange: Subject<HAEntity>
 ```
 
 #### Examples
 
 ```typescript
 ha
-  .states
+  .entities
   .onChange
   .pipe(
-    filter(state => state.entity_id === 'MyEntityId'),
-    map(state => state.new_state)
+    filter(entity => entity.id === 'MyEntityId')
   )
-  .subscribe(newState => {
+  .subscribe(entity => {
     // do something with new state
-    console.log('Received new state', newState);
+    console.log('Received new state of entity', entity);
   })
 ```
 
-### 4.2 Fetch states from HomeAssistant and update in the memory
+### 4.2 Fetch/update states from HomeAssistant and update in the memory
 
 Will call HA to get all the states, updates them in the memory and returns as observable resolution
 
 ```typescript
-*.states.fetchStates(): Observable<IHAResultMessage<IHAEntityState[]>>
+*.entities.fetchEntities(): Observable<HAEntity[]>
 ```
 
 ### 4.3 Get state from memory
 
-Will return state from memory or null if not found
+Will return entity from memory or null if not found
 
 ```typescript
-*.states.getState(entityId: string): IHAEntityState | null
+*.entities.getState(entityId: string): HAEntity | null
 ```
 
 

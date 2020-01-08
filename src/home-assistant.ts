@@ -15,14 +15,34 @@ import { BehaviorSubject, fromEvent, interval, Observable, of, Subject } from 'r
 import { catchError, filter, map, take, tap, timeout } from 'rxjs/operators';
 import { HomeAssistantEvents } from './events';
 import { HomeAssistantService } from './service';
-import { HomeAssistantStates } from './states';
+import { HomeAssistantEntities } from './entities';
 
 
 export class HomeAssistant {
 
   events: HomeAssistantEvents;
   service: HomeAssistantService;
-  states: HomeAssistantStates;
+  entities: HomeAssistantEntities;
+
+  get ready$(): Observable<void> {
+
+    let obs: Observable<any>;
+
+    if (this.connectionStatus === HAConnectionStatus.Connected) {
+      obs = of('');
+    } else {
+      obs = this.connectionStatus$
+        .pipe(
+          filter(status => status === HAConnectionStatus.Connected)
+        );
+    }
+
+    return obs
+      .pipe(
+        take(1)
+      );
+
+  }
 
   connectionStatus$ = new BehaviorSubject<HAConnectionStatus>(HAConnectionStatus.Disconnected);
   connectionStatus: HAConnectionStatus = HAConnectionStatus.Disconnected;
@@ -56,7 +76,7 @@ export class HomeAssistant {
 
     this.events = new HomeAssistantEvents(this);
     this.service = new HomeAssistantService(this);
-    this.states = new HomeAssistantStates(this);
+    this.entities = new HomeAssistantEntities(this);
 
     this.init();
 
@@ -84,7 +104,7 @@ export class HomeAssistant {
         result: null,
         error: {
           code: -1,
-          message: 'Not connected to ha'
+          message: 'Not connected to HA'
         }
       } as IHAResultMessage);
     }

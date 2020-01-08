@@ -97,7 +97,12 @@ export interface IHASubscribeToEvent extends IHAMessageWithId {
 export enum HADomain {
   Light = 'light',
   Switch = 'switch',
-  Sensor = 'sensor'
+  Sensor = 'sensor',
+  ZWave = 'zwave',
+  Automation = 'automation',
+  Group = 'group',
+  BinarySensor = 'binary_sensor',
+  Sun = 'sun'
 }
 
 export enum HAServiceType {
@@ -116,7 +121,7 @@ export interface IHACallServiceMessage extends IHAMessageWithId {
 export interface IHAResultMessage<T = any> extends IHAMessageWithId {
   type: HAMessageType.Result;
   success: boolean;
-  result: T;
+  result: T | null;
   error?: {
     code: number;
     message: string;
@@ -126,7 +131,7 @@ export interface IHAResultMessage<T = any> extends IHAMessageWithId {
 export interface IHAEntityState {
   entity_id: string;
   state: string;
-  attributes: any;
+  attributes: {[key: string]: any};
   last_changed: string;
   last_updated: string;
   context: any;
