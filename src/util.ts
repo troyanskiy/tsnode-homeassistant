@@ -13,4 +13,8 @@ export const toggleServiceActionType = (force?: boolean)
 
   return HAServiceType.Toggle;
 
-}
+};
+
+export const clamp = (value: number, minVal: number, maxVal: number): number => {
+  return Math.min(Math.max(value, minVal), maxVal);
+};

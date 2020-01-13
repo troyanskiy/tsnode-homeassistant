@@ -18,6 +18,7 @@ import { HomeAssistantService } from './service';
 import { HomeAssistantEntities } from './entities';
 
 
+
 export class HomeAssistant {
 
   events: HomeAssistantEvents;
@@ -28,12 +29,12 @@ export class HomeAssistant {
 
     let obs: Observable<any>;
 
-    if (this.connectionStatus === HAConnectionStatus.Connected) {
+    if (this.connectionStatus === HAConnectionStatus.Ready) {
       obs = of('');
     } else {
       obs = this.connectionStatus$
         .pipe(
-          filter(status => status === HAConnectionStatus.Connected)
+          filter(status => status === HAConnectionStatus.Ready)
         );
     }
 
@@ -95,7 +96,9 @@ export class HomeAssistant {
    */
   sendWithIdAndResult(data: IHAMessageWithId): Observable<IHAResultMessage> {
 
-    if (this.connectionStatus !== HAConnectionStatus.Connected) {
+    console.log('sendWithIdAndResult', data);
+
+    if (this.connectionStatus < HAConnectionStatus.Connected) {
 
       return of({
         id: 0,
@@ -154,6 +157,10 @@ export class HomeAssistant {
 
   }
 
+  request(type: 'GET' | 'POST', url: string, body?: any): Observable<any> {
+    return of('');
+  }
+
 
   /**
    * Main init
@@ -195,7 +202,7 @@ export class HomeAssistant {
         filter(() =>
           !this.pingSend
           && this.lastMessageTime + this.pingInterval < Date.now()
-          && this.connectionStatus === HAConnectionStatus.Connected),
+          && this.connectionStatus >= HAConnectionStatus.Connected),
       )
       .subscribe(
         () => this.ping()
@@ -280,7 +287,7 @@ export class HomeAssistant {
    * General send data to ha
    */
   private send(data: IHAMessageBase) {
-    console.log('Send to HA', data);
+    // console.log('Send to HA', data);
     this.ws && this.ws.send(JSON.stringify(data));
   }
 
@@ -316,6 +323,11 @@ export class HomeAssistant {
     this.updateConnectionStatus(HAConnectionStatus.Connected);
 
     this.haVersion = $event.ha_version;
+
+    this.entities.fetchEntities()
+      .subscribe(() => {
+        this.updateConnectionStatus(HAConnectionStatus.Ready);
+      });
 
   }
 
@@ -359,7 +371,7 @@ export class HomeAssistant {
    */
   private ping() {
 
-    console.log('Ping');
+    // console.log('Ping');
 
     this.pingSend = true;
 
@@ -368,9 +380,9 @@ export class HomeAssistant {
         type: HAMessageType.Ping
       })
       .subscribe((data: IHAResultMessage) => {
-        if (data.type !== HAMessageType.Result) {
-          console.log('Pong');
-        }
+        // if (data.type !== HAMessageType.Result) {
+        //   console.log('Pong');
+        // }
         this.pingSend = false;
       });
   }

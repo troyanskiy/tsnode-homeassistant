@@ -43,10 +43,11 @@ export interface IHAConnectAuthToken {
 }
 
 export enum HAConnectionStatus {
-  Disconnected = 'disconnected',
-  Connecting = 'connecting',
-  Authenticating = 'authenticating',
-  Connected = 'connected'
+  Disconnected,
+  Connecting,
+  Authenticating,
+  Connected,
+  Ready,
 }
 
 export interface IHAConnectAuthInvalid extends IHAMessageBase {
@@ -102,7 +103,8 @@ export enum HADomain {
   Automation = 'automation',
   Group = 'group',
   BinarySensor = 'binary_sensor',
-  Sun = 'sun'
+  Sun = 'sun',
+  InputBoolean = 'input_boolean'
 }
 
 export enum HAServiceType {
@@ -131,8 +133,25 @@ export interface IHAResultMessage<T = any> extends IHAMessageWithId {
 export interface IHAEntityState {
   entity_id: string;
   state: string;
-  attributes: {[key: string]: any};
+  attributes: { [key: string]: any };
   last_changed: string;
   last_updated: string;
   context: any;
 }
+
+export interface IHAEntityBase extends IHAEntityState {
+  setStateFromHA(state: IHAEntityState, skipSaveState?: boolean);
+  getState(): IHAEntityState;
+  destroy();
+}
+
+export enum HALightSupportFeatureFlag {
+  BRIGHTNESS = 1,
+  COLOR_TEMP = 2,
+  EFFECT = 4,
+  FLASH = 8,
+  COLOR = 16,
+  TRANSITION = 32,
+  WHITE_VALUE = 128
+}
+

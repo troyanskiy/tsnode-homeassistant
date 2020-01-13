@@ -26,7 +26,7 @@ export class HomeAssistantEvents {
 
     this.hass.connectionStatus$
       .pipe(
-        filter(status => status === HAConnectionStatus.Connected)
+        filter(status => status === HAConnectionStatus.Ready)
       )
       .subscribe(() => this.reSubscribe());
 

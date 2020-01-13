@@ -1,21 +1,15 @@
-import { HomeAssistant } from './index';
-import {
-  HAConnectionStatus,
-  HAMessageType,
-  IHAEntityState,
-  IHAEvent,
-  IHAEventStateChangeData,
-  IHAResultMessage
-} from './declarations';
+import { HADomain, HAEntityLight, HAEntityBoolean, HomeAssistant, IHAEntityBase } from './index';
+import { HAMessageType, IHAEntityState, IHAEvent, IHAEventStateChangeData, IHAResultMessage } from './declarations';
 import { Observable, Subject } from 'rxjs';
-import { filter, map, tap } from 'rxjs/operators';
-import { HAEntity } from './entities/base.entity';
+import { map } from 'rxjs/operators';
+import { HAEntityBase } from './entities/HAEntityBase';
+
 
 export class HomeAssistantEntities {
 
-  onChange = new Subject<HAEntity>();
+  onChange = new Subject<IHAEntityBase>();
 
-  private entities: { [id: string]: HAEntity } = {};
+  private entities: { [id: string]: HAEntityBase } = {};
 
   constructor(private hass: HomeAssistant) {
 
@@ -24,20 +18,12 @@ export class HomeAssistantEntities {
       .select('state_changed')
       .subscribe(data => this.handleHAStateChange(data));
 
-    this.hass.connectionStatus$
-      .pipe(
-        filter(status => status === HAConnectionStatus.Connected)
-      )
-      .subscribe(() => this.fetchEntities());
-
   }
 
   /**
    * Fetch and set states
    */
-  fetchEntities(): Observable<HAEntity[]> {
-
-    console.log('Fetching states');
+  fetchEntities(): Observable<HAEntityBase[]> {
 
     return this.hass
       .sendWithIdAndResult({
@@ -46,28 +32,19 @@ export class HomeAssistantEntities {
       .pipe(
         map(($event: IHAResultMessage<IHAEntityState[]>) => {
 
-          const oldEntities = this.entities;
-          this.entities = {};
-
           if ($event.result) {
-            $event.result.forEach((new_state: IHAEntityState)  => {
+            $event.result.forEach((new_state: IHAEntityState) => {
 
-              let entity = oldEntities[new_state.entity_id];
+              let entity = this.getEntity(new_state.entity_id);
 
               if (entity) {
                 entity.setStateFromHA(new_state);
               } else {
-                entity = new HAEntity(new_state);
+                this.createEntity(new_state);
               }
-
-              this.entities[new_state.entity_id] = entity;
-
-              delete oldEntities[new_state.entity_id];
 
             });
           }
-
-          Object.values(oldEntities).forEach((entity: HAEntity) => entity.destroy());
 
           return Object.values(this.entities);
 
@@ -80,8 +57,8 @@ export class HomeAssistantEntities {
   /**
    * Get current state
    */
-  getEntity(entityId: string): HAEntity | null {
-    return this.entities[entityId] || null;
+  getEntity<T extends IHAEntityBase>(entityId: string): T | null {
+    return this.entities[entityId] as any || null;
   }
 
   /**
@@ -97,19 +74,44 @@ export class HomeAssistantEntities {
       if (entity) {
         entity.setStateFromHA(data.new_state);
       } else {
-        entity = new HAEntity(data.new_state);
-        this.entities[data.entity_id] = entity;
+        this.createEntity(data.new_state);
       }
     } else {
       if (entity) {
         entity.destroy();
-        delete this.entities[data.entity_id];
       }
     }
 
     if (entity) {
       this.onChange.next(entity);
     }
+
+  }
+
+  private createEntity(state: IHAEntityState): HAEntityBase {
+
+    const [domain, objectId] = state.entity_id.split('.');
+
+    let className = HAEntityBase;
+
+    switch (domain) {
+
+      case HADomain.Switch:
+      case HADomain.InputBoolean:
+        className = HAEntityBoolean;
+        break;
+
+      case HADomain.Light:
+        className = HAEntityLight;
+
+
+    }
+
+    const entity = new className(this.hass, state, domain as HADomain, objectId);
+
+    this.entities[entity.entity_id] = entity;
+
+    return entity;
 
   }
 

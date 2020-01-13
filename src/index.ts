@@ -5,5 +5,5 @@ export * from './service';
 export * from './entities';
 export * from './util';
 
-export * from './entities/base.entity'
+export * from './entities/index';
 
