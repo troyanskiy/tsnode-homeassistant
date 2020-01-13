@@ -1,8 +1,19 @@
-import { HADomain, HAEntityLight, HAEntityBoolean, HomeAssistant, IHAEntityBase } from './index';
-import { HAMessageType, IHAEntityState, IHAEvent, IHAEventStateChangeData, IHAResultMessage } from './declarations';
+import {
+  HADomain,
+  HAMessageType,
+  IHAEntityBase,
+  IHAEntityState,
+  IHAEvent,
+  IHAEventStateChangeData,
+  IHAResultMessage
+} from './declarations';
 import { Observable, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { HomeAssistant } from './home-assistant';
 import { HAEntityBase } from './entities/HAEntityBase';
+import { HAEntityBoolean } from './entities/HAEntityBoolean';
+import { HAEntityLight } from './entities/HAEntityLight';
+import { HAEntitySwitch } from './entities/HAEntitySwitch';
 
 
 export class HomeAssistantEntities {
@@ -97,6 +108,9 @@ export class HomeAssistantEntities {
     switch (domain) {
 
       case HADomain.Switch:
+        className = HAEntitySwitch;
+        break;
+
       case HADomain.InputBoolean:
         className = HAEntityBoolean;
         break;

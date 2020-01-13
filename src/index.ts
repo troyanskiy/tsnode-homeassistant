@@ -5,5 +5,8 @@ export * from './service';
 export * from './entities';
 export * from './util';
 
-export * from './entities/index';
+export * from './entities/HAEntityBase';
+export * from './entities/HAEntityBoolean';
+export * from './entities/HAEntityLight';
+export * from './entities/HAEntitySwitch';
 

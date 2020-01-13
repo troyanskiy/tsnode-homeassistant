@@ -1,4 +1,4 @@
-import { HomeAssistant } from './index';
+import { HomeAssistant } from './home-assistant';
 import {
   HAConnectionStatus,
   HAMessageType,

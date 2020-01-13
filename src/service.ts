@@ -1,4 +1,4 @@
-import { HomeAssistant } from './index';
+import { HomeAssistant } from './home-assistant';
 import { HADomain, HAMessageType, HAServiceType, IHACallServiceMessage, IHAResultMessage } from './declarations';
 import { Observable } from 'rxjs';
 import { toggleServiceActionType } from './util';

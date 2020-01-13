@@ -96,8 +96,6 @@ export class HomeAssistant {
    */
   sendWithIdAndResult(data: IHAMessageWithId): Observable<IHAResultMessage> {
 
-    console.log('sendWithIdAndResult', data);
-
     if (this.connectionStatus < HAConnectionStatus.Connected) {
 
       return of({
@@ -157,9 +155,6 @@ export class HomeAssistant {
 
   }
 
-  request(type: 'GET' | 'POST', url: string, body?: any): Observable<any> {
-    return of('');
-  }
 
 
   /**
