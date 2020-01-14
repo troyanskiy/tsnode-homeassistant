@@ -1,6 +1,6 @@
 {
   "name": "tsnode-homeassistant",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "description": "TypeScript/RXJS Node.js api for HomeAssistant",
   "main": "dist/index.js",
   "type": "commonjs",
