@@ -13,7 +13,7 @@ export class HAEntityBase implements IHAEntityBase {
   last_changed: string;
   last_updated: string;
 
-  onUpdate = new Subject<HAEntityBase>();
+  onUpdate = new Subject<void>();
 
   lastState: IHAEntityState | null = null;
 
@@ -42,7 +42,7 @@ export class HAEntityBase implements IHAEntityBase {
 
     this.alive = true;
 
-    this.onUpdate.next(this);
+    this.onUpdate.next();
   }
 
   getState(): IHAEntityState {

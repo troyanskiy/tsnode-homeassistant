@@ -6,7 +6,7 @@ export * from './entities';
 export * from './util';
 
 export * from './entities/HAEntityBase';
-export * from './entities/HAEntityBoolean';
+export * from './entities/HAEntityBinary';
 export * from './entities/HAEntityLight';
 export * from './entities/HAEntitySwitch';
 

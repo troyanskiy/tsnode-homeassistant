@@ -1,4 +1,5 @@
 import { Subject } from 'rxjs';
+import { HAEntityBase } from './entities/HAEntityBase';
 
 export interface IHAConfig {
   host?: string;
@@ -140,6 +141,9 @@ export interface IHAEntityState {
 }
 
 export interface IHAEntityBase extends IHAEntityState {
+  onUpdate: Subject<void>;
+  lastState: IHAEntityState | null;
+  alive: boolean;
   setStateFromHA(state: IHAEntityState, skipSaveState?: boolean);
   getState(): IHAEntityState;
   destroy();

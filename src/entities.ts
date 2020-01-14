@@ -11,7 +11,7 @@ import { Observable, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { HomeAssistant } from './home-assistant';
 import { HAEntityBase } from './entities/HAEntityBase';
-import { HAEntityBoolean } from './entities/HAEntityBoolean';
+import { HAEntityBinary } from './entities/HAEntityBinary';
 import { HAEntityLight } from './entities/HAEntityLight';
 import { HAEntitySwitch } from './entities/HAEntitySwitch';
 
@@ -108,11 +108,12 @@ export class HomeAssistantEntities {
     switch (domain) {
 
       case HADomain.Switch:
+      case HADomain.InputBoolean:
         className = HAEntitySwitch;
         break;
 
-      case HADomain.InputBoolean:
-        className = HAEntityBoolean;
+      case HADomain.BinarySensor:
+        className = HAEntityBinary;
         break;
 
       case HADomain.Light:

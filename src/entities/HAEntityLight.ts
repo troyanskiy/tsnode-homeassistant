@@ -1,10 +1,10 @@
-import { HAEntityBoolean } from './HAEntityBoolean';
+import { HAEntityBinary } from './HAEntityBinary';
 import { HALightSupportFeatureFlag, IHAEntityState } from '../declarations';
 import { clamp } from '../util';
 
 
 
-export class HAEntityLight extends HAEntityBoolean {
+export class HAEntityLight extends HAEntityBinary {
 
   attributes: IHAEntityLightAttributes;
 
