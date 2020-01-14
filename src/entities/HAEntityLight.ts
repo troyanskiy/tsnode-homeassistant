@@ -1,10 +1,9 @@
-import { HAEntityBinary } from './HAEntityBinary';
 import { HALightSupportFeatureFlag, IHAEntityState } from '../declarations';
+import { HAEntitySwitch } from './HAEntitySwitch';
 import { clamp } from '../util';
 
 
-
-export class HAEntityLight extends HAEntityBinary {
+export class HAEntityLight extends HAEntitySwitch {
 
   attributes: IHAEntityLightAttributes;
 
@@ -86,7 +85,7 @@ interface IHAEntityLightAttributesBase {
   xy_color?: [number, number];
 }
 
-interface IHAEntityLightAttributes extends IHAEntityLightAttributesBase{
+interface IHAEntityLightAttributes extends IHAEntityLightAttributesBase {
   supported_features: number;
 
   friendly_name?: string;
