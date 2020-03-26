@@ -1,8 +1,8 @@
 import { HAServiceType } from './declarations';
 
-export const toggleServiceActionType = (force?: boolean)
-  : HAServiceType.Toggle | HAServiceType.TurnOn | HAServiceType.TurnOff => {
-
+export const toggleServiceActionType = (
+  force?: boolean,
+): HAServiceType.Toggle | HAServiceType.TurnOn | HAServiceType.TurnOff => {
   if (force === true) {
     return HAServiceType.TurnOn;
   }
@@ -12,9 +12,12 @@ export const toggleServiceActionType = (force?: boolean)
   }
 
   return HAServiceType.Toggle;
-
 };
 
-export const clamp = (value: number, minVal: number, maxVal: number): number => {
+export const clamp = (
+  value: number,
+  minVal: number,
+  maxVal: number,
+): number => {
   return Math.min(Math.max(value, minVal), maxVal);
 };

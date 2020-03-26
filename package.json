@@ -31,7 +31,20 @@
   "devDependencies": {
     "@types/node": "^13.1.6",
     "@types/ws": "^6.0.4",
+    "husky": "^4.2.3",
+    "lint-staged": "^10.0.9",
+    "prettier": "^2.0.2",
     "ts-node": "^8.6.1",
     "typescript": "^3.7.4"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }

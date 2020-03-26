@@ -1,5 +1,4 @@
 import { Subject } from 'rxjs';
-import { HAEntityBase } from './entities/HAEntityBase';
 
 export interface IHAConfig {
   host?: string;
@@ -24,7 +23,7 @@ export enum HAMessageType {
   GetStates = 'get_states',
 
   Ping = 'ping',
-  Pong = 'pong'
+  Pong = 'pong',
 }
 
 export interface IHAMessageBase {
@@ -67,7 +66,7 @@ export interface IEventSubscriptionEntry {
 }
 
 export interface IHAMessageEvent extends IHAMessageWithId {
-  type: HAMessageType.Event
+  type: HAMessageType.Event;
   event: IHAEvent;
 }
 
@@ -105,13 +104,13 @@ export enum HADomain {
   Group = 'group',
   BinarySensor = 'binary_sensor',
   Sun = 'sun',
-  InputBoolean = 'input_boolean'
+  InputBoolean = 'input_boolean',
 }
 
 export enum HAServiceType {
   TurnOn = 'turn_on',
   TurnOff = 'turn_off',
-  Toggle = 'toggle'
+  Toggle = 'toggle',
 }
 
 export interface IHACallServiceMessage extends IHAMessageWithId {
@@ -128,7 +127,7 @@ export interface IHAResultMessage<T = any> extends IHAMessageWithId {
   error?: {
     code: number;
     message: string;
-  }
+  };
 }
 
 export interface IHAEntityState {
@@ -156,6 +155,5 @@ export enum HALightSupportFeatureFlag {
   FLASH = 8,
   COLOR = 16,
   TRANSITION = 32,
-  WHITE_VALUE = 128
+  WHITE_VALUE = 128,
 }
-
