@@ -1,9 +1,14 @@
-import { HADomain, HAServiceType, IHAEntityBase, IHAEntityState, IHAResultMessage } from '../declarations';
 import { Observable, Subject } from 'rxjs';
+import {
+  HADomain,
+  HAServiceType,
+  IHAEntityBase,
+  IHAEntityState,
+  IHAResultMessage,
+} from '../declarations';
 import { HomeAssistant } from '../home-assistant';
 
 export class HAEntityBase implements IHAEntityBase {
-
   entity_id: string = '';
 
   state: string = '';
@@ -21,19 +26,18 @@ export class HAEntityBase implements IHAEntityBase {
 
   protected attributesToUpdate: any = {};
 
-  constructor(protected hass: HomeAssistant,
-              state: IHAEntityState,
-              public domain: HADomain,
-              public objectId: string) {
-
+  constructor(
+    protected hass: HomeAssistant,
+    state: IHAEntityState,
+    public domain: HADomain,
+    public objectId: string,
+  ) {
     this.setStateFromHA(state, true);
 
     this.init();
-
   }
 
   setStateFromHA(state: IHAEntityState, skipSaveState: boolean = false) {
-
     if (!skipSaveState) {
       this.lastState = this.getState();
     }
@@ -46,43 +50,36 @@ export class HAEntityBase implements IHAEntityBase {
   }
 
   getState(): IHAEntityState {
-    return JSON.parse(JSON.stringify({
-      entity_id: this.entity_id,
-      state: this.state,
-      attributes: this.attributes,
-      context: this.context,
-      last_changed: this.last_changed,
-      last_updated: this.last_updated
-    }));
+    return JSON.parse(
+      JSON.stringify({
+        entity_id: this.entity_id,
+        state: this.state,
+        attributes: this.attributes,
+        context: this.context,
+        last_changed: this.last_changed,
+        last_updated: this.last_updated,
+      }),
+    );
   }
 
   destroy() {
     this.alive = false;
   }
 
-  protected init() {
-
-  }
+  protected init() {}
 
   protected callService(service: HAServiceType): Observable<IHAResultMessage> {
-    return this.hass
-      .service
-      .call(
-        this.domain,
-        service,
-        this.getServiceData()
-      );
+    return this.hass.service.call(this.domain, service, this.getServiceData());
   }
 
   protected getServiceData(): any {
     const data = {
       ...this.attributesToUpdate,
-      entity_id: this.entity_id
+      entity_id: this.entity_id,
     };
 
     this.attributesToUpdate = {};
 
     return data;
   }
-
 }

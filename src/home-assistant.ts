@@ -1,4 +1,15 @@
 import {
+  BehaviorSubject,
+  fromEvent,
+  interval,
+  Observable,
+  of,
+  Subject,
+} from 'rxjs';
+import { catchError, filter, map, take, tap, timeout } from 'rxjs/operators';
+import * as WebSocket from 'ws';
+import { ErrorEvent, MessageEvent } from 'ws';
+import {
   HAConnectionStatus,
   HAMessageType,
   IHAConfig,
@@ -7,45 +18,34 @@ import {
   IHAConnectInit,
   IHAMessageBase,
   IHAMessageWithId,
-  IHAResultMessage
+  IHAResultMessage,
 } from './declarations';
-import * as WebSocket from 'ws';
-import { ErrorEvent, MessageEvent } from 'ws';
-import { BehaviorSubject, fromEvent, interval, Observable, of, Subject } from 'rxjs';
-import { catchError, filter, map, take, tap, timeout } from 'rxjs/operators';
+import { HomeAssistantEntities } from './entities';
 import { HomeAssistantEvents } from './events';
 import { HomeAssistantService } from './service';
-import { HomeAssistantEntities } from './entities';
-
-
 
 export class HomeAssistant {
-
   events: HomeAssistantEvents;
   service: HomeAssistantService;
   entities: HomeAssistantEntities;
 
   get ready$(): Observable<void> {
-
     let obs: Observable<any>;
 
     if (this.connectionStatus === HAConnectionStatus.Ready) {
       obs = of('');
     } else {
-      obs = this.connectionStatus$
-        .pipe(
-          filter(status => status === HAConnectionStatus.Ready)
-        );
+      obs = this.connectionStatus$.pipe(
+        filter(status => status === HAConnectionStatus.Ready),
+      );
     }
 
-    return obs
-      .pipe(
-        take(1)
-      );
-
+    return obs.pipe(take(1));
   }
 
-  connectionStatus$ = new BehaviorSubject<HAConnectionStatus>(HAConnectionStatus.Disconnected);
+  connectionStatus$ = new BehaviorSubject<HAConnectionStatus>(
+    HAConnectionStatus.Disconnected,
+  );
   connectionStatus: HAConnectionStatus = HAConnectionStatus.Disconnected;
 
   haVersion = '';
@@ -67,7 +67,6 @@ export class HomeAssistant {
   private lastMessageTime = 0;
 
   constructor(private config: IHAConfig) {
-
     this.config.host = this.config.host || '127.0.0.1';
     this.config.port = this.config.port || 8123;
 
@@ -80,7 +79,6 @@ export class HomeAssistant {
     this.entities = new HomeAssistantEntities(this);
 
     this.init();
-
   }
 
   /**
@@ -90,14 +88,11 @@ export class HomeAssistant {
     return this.id++;
   }
 
-
   /**
    * Send to HA with ID
    */
   sendWithIdAndResult(data: IHAMessageWithId): Observable<IHAResultMessage> {
-
     if (this.connectionStatus < HAConnectionStatus.Connected) {
-
       return of({
         id: 0,
         type: HAMessageType.Result,
@@ -105,8 +100,8 @@ export class HomeAssistant {
         result: null,
         error: {
           code: -1,
-          message: 'Not connected to HA'
-        }
+          message: 'Not connected to HA',
+        },
       } as IHAResultMessage);
     }
 
@@ -120,100 +115,87 @@ export class HomeAssistant {
 
     this.send(data);
 
-    return this.resultSubjects[data.id]
-      .pipe(
-        timeout(this.timeout),
-        catchError(() => {
+    return this.resultSubjects[data.id].pipe(
+      timeout(this.timeout),
+      catchError(() => {
+        if (this.connectionId === reqConnectionId) {
+          console.log('Timeout. Reconnecting');
+          this.reconnect();
+        }
 
-          if (this.connectionId === reqConnectionId) {
-            console.log('Timeout. Reconnecting');
-            this.reconnect();
-          }
-
-          return of({
-            id: data.id,
-            type: HAMessageType.Result,
-            success: false,
-            result: null,
-            error: {
-              code: -2,
-              message: 'Timeout'
-            }
-          } as IHAResultMessage)
-        })
-        // catchError(() => throwError({
-        //   id: 0,
-        //   type: HAMessageType.Result,
-        //   success: false,
-        //   result: null,
-        //   error: {
-        //     code: -2,
-        //     message: 'Timeout'
-        //   }
-        // } as IHAResultMessage))
-      );
-
+        return of({
+          id: data.id,
+          type: HAMessageType.Result,
+          success: false,
+          result: null,
+          error: {
+            code: -2,
+            message: 'Timeout',
+          },
+        } as IHAResultMessage);
+      }),
+      // catchError(() => throwError({
+      //   id: 0,
+      //   type: HAMessageType.Result,
+      //   success: false,
+      //   result: null,
+      //   error: {
+      //     code: -2,
+      //     message: 'Timeout'
+      //   }
+      // } as IHAResultMessage))
+    );
   }
-
-
 
   /**
    * Main init
    */
   private init() {
-
     // Need to auth
     this.wsMessage$
-      .pipe(
-        filter($event => $event.type === HAMessageType.AuthRequired)
-      )
+      .pipe(filter($event => $event.type === HAMessageType.AuthRequired))
       .subscribe(($event: IHAConnectInit) => this.sendAuth($event));
 
     // Auth OK
     this.wsMessage$
-      .pipe(
-        filter($event => $event.type === HAMessageType.AuthOK)
-      )
+      .pipe(filter($event => $event.type === HAMessageType.AuthOK))
       .subscribe(($event: IHAConnectInit) => this.setAuthenticated($event));
 
     // Auth fail
     this.wsMessage$
-      .pipe(
-        filter($event => $event.type === HAMessageType.AuthInvalid)
-      )
+      .pipe(filter($event => $event.type === HAMessageType.AuthInvalid))
       .subscribe(($event: IHAConnectAuthInvalid) => this.authInvalid($event));
 
     // HA Results
     this.wsMessage$
       .pipe(
-        filter(($event: IHAResultMessage) =>
-          $event.type === HAMessageType.Result || $event.type === HAMessageType.Pong
-        )
+        filter(
+          ($event: IHAResultMessage) =>
+            $event.type === HAMessageType.Result ||
+            $event.type === HAMessageType.Pong,
+        ),
       )
       .subscribe($event => this.handleHAResult($event));
 
     interval(this.pingInterval)
       .pipe(
-        filter(() =>
-          !this.pingSend
-          && this.lastMessageTime + this.pingInterval < Date.now()
-          && this.connectionStatus >= HAConnectionStatus.Connected),
+        filter(
+          () =>
+            !this.pingSend &&
+            this.lastMessageTime + this.pingInterval < Date.now() &&
+            this.connectionStatus >= HAConnectionStatus.Connected,
+        ),
       )
-      .subscribe(
-        () => this.ping()
-      );
-
+      .subscribe(() => this.ping());
 
     // Connect to HA
     this.connect();
-
   }
 
   /**
    * Main connect
    */
   private connect() {
-
     this.connectionId++;
 
     const config = this.config;
@@ -227,19 +209,15 @@ export class HomeAssistant {
     this.ws = new WebSocket(url);
 
     fromEvent(this.ws, 'open')
-      .pipe(
-        take(1)
-      )
+      .pipe(take(1))
       .subscribe(() => {
         console.log('HA WebSocket Connected');
       });
 
     fromEvent(this.ws, 'error')
-      .pipe(
-        take(1)
-      )
+      .pipe(take(1))
       .subscribe((data: ErrorEvent) => {
-        console.log('HA Connection Error: ', data.message)
+        console.log('HA Connection Error: ', data.message);
       });
 
     const messagesSubscription = fromEvent(this.ws, 'message')
@@ -248,14 +226,12 @@ export class HomeAssistant {
         tap($event => {
           // console.log('Received from HA', $event);
           this.lastMessageTime = Date.now();
-        })
+        }),
       )
       .subscribe(this.wsMessage$);
 
     fromEvent(this.ws, 'close')
-      .pipe(
-        take(1)
-      )
+      .pipe(take(1))
       .subscribe(() => {
         console.log('HA Disconnected');
 
@@ -265,8 +241,6 @@ export class HomeAssistant {
 
         setTimeout(() => this.connect(), 2000);
       });
-
-
   }
 
   /**
@@ -290,7 +264,6 @@ export class HomeAssistant {
    * Send auth token
    */
   private sendAuth($event: IHAConnectInit) {
-
     console.log('Sending auth with access token');
 
     this.updateConnectionStatus(HAConnectionStatus.Authenticating);
@@ -299,16 +272,14 @@ export class HomeAssistant {
 
     this.send({
       type: HAMessageType.Auth,
-      access_token: this.config.token
+      access_token: this.config.token,
     } as IHAConnectAuthToken);
-
   }
 
   /**
    * Set auth success
    */
   private setAuthenticated($event: IHAConnectInit) {
-
     console.log('Authenticated with HA');
 
     this.id = 1;
@@ -319,11 +290,9 @@ export class HomeAssistant {
 
     this.haVersion = $event.ha_version;
 
-    this.entities.fetchEntities()
-      .subscribe(() => {
-        this.updateConnectionStatus(HAConnectionStatus.Ready);
-      });
-
+    this.entities.fetchEntities().subscribe(() => {
+      this.updateConnectionStatus(HAConnectionStatus.Ready);
+    });
   }
 
   /**
@@ -340,7 +309,6 @@ export class HomeAssistant {
    * @param $event
    */
   private handleHAResult($event: IHAResultMessage) {
-
     if (!$event.id) {
       return;
     }
@@ -353,7 +321,6 @@ export class HomeAssistant {
     }
 
     delete this.resultSubjects[$event.id];
-
   }
 
   private updateConnectionStatus(status: HAConnectionStatus) {
@@ -365,21 +332,17 @@ export class HomeAssistant {
    * Send ping
    */
   private ping() {
-
     // console.log('Ping');
 
     this.pingSend = true;
 
-    this
-      .sendWithIdAndResult({
-        type: HAMessageType.Ping
-      })
-      .subscribe((data: IHAResultMessage) => {
-        // if (data.type !== HAMessageType.Result) {
-        //   console.log('Pong');
-        // }
-        this.pingSend = false;
-      });
+    this.sendWithIdAndResult({
+      type: HAMessageType.Ping,
+    }).subscribe((data: IHAResultMessage) => {
+      // if (data.type !== HAMessageType.Result) {
+      //   console.log('Pong');
+      // }
+      this.pingSend = false;
+    });
   }
-
 }
